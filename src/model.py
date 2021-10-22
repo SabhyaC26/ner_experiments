@@ -52,4 +52,4 @@ class BiLSTM_CRF(nn.Module):
     # pass through crf
     mask = self.create_mask(input)
     neg_log_likelihood = -self.crf(inputs=output, tags=labels, mask=mask)
-    return output
+    return neg_log_likelihood
