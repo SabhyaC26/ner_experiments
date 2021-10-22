@@ -52,7 +52,7 @@ def decode_batch(model, batch, idx_to_tags):
     padded_batch = pad_test_batch(batch)
     x_padded, x_lens = padded_batch
     result = model(x_padded, x_lens, None, decode=True)
-    predicted_tags = result['tags']
+    predicted_tags = result['tags'][0][0]
     actual_pred_tags = []
     for pred in predicted_tags:
       actual_pred_tags.append([idx_to_tags[i] for i in pred])
