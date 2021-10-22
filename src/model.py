@@ -41,7 +41,7 @@ class BiLSTM_CRF(nn.Module):
     mask = (src != self.pad_idx).permute(0, 1)
     return mask
 
-  def forward(self, input, input_lens, labels):
+  def forward(self, input, input_lens, labels, decode):
     # pass through bilstm
     embedded = self.dropout(self.embeddings(input))
     packed_embedded = rnn.pack_padded_sequence(embedded, input_lens, batch_first=True, enforce_sorted=False)
@@ -51,5 +51,9 @@ class BiLSTM_CRF(nn.Module):
     output = self.linear(output)
     # pass through crf
     mask = self.create_mask(input)
-    neg_log_likelihood = -self.crf(inputs=output, tags=labels, mask=mask)
-    return neg_log_likelihood
+    result = {}
+    if not decode:
+      result['loss'] = -self.crf(inputs=output, tags=labels, mask=mask)
+    else:
+      result['tags'] = self.crf.viterbi_tags(logits=output, mask=mask)
+    return result
