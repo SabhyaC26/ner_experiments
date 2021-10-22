@@ -7,6 +7,7 @@ from tqdm import tqdm
 from data import Conll2003, UNK, PAD
 from util import pad_batch
 from model import BiLSTM_CRF
+import allennlp.modules.conditional_random_field as crf
 
 def load_data():
   conll_dataset = datasets.load_dataset('conll2003')
@@ -20,9 +21,10 @@ def get_device():
   return device
 
 def train_model(model, dataloader):
-  for x_padded, y_padded, x_lens, y_lens in dataloader:
-    output = model(x_padded, x_lens)
-    print(output.shape)
+  with tqdm(dataloader, unit="batch") as tqdm_loader:
+    for x_padded, x_lens, y_padded in tqdm_loader:
+      output = model(x_padded, x_lens, y_padded)
+      print(output)
 
 def main(args):
   # build dataset & dataloader
@@ -33,6 +35,10 @@ def main(args):
   train_dataloader = DataLoader(dataset=train_data, batch_size=2, shuffle=True, collate_fn=pad_batch)
 
   # define model
+  crf_constraints = crf.allowed_transitions(
+    constraint_type='BIO',
+    labels=train_data.idx_to_tags
+  )
   bilstm_crf = BiLSTM_CRF(
     device=device,
     vocab_size=len(train_data.idx_to_tokens.keys()),
@@ -40,7 +46,10 @@ def main(args):
     embedding_dim=300,
     lstm_hidden_dim=512,
     lstm_num_layers=1,
-    dropout=0.2)
+    dropout=0.2,
+    constraints=crf_constraints,
+    pad_idx=train_data.tokens_to_idx[PAD]
+  )
   bilstm_crf.to(device)
 
   # run model

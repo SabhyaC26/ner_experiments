@@ -6,12 +6,13 @@ import allennlp.modules.conditional_random_field as crf
 class BiLSTM_CRF(nn.Module):
   def __init__(self, device, vocab_size, num_tags, embedding_dim=300,
                lstm_hidden_dim=300, lstm_num_layers=1, dropout=0.2,
-               constraints=None):
+               constraints=None, pad_idx=0):
     super(BiLSTM_CRF, self).__init__()
     self.device = device
     self.vocab_size = vocab_size
     self.num_tags = num_tags
     self.constraints=constraints
+    self.pad_idx = pad_idx
     # TODO: change to pretrained embeddings
     self.embeddings = nn.Embedding(
       num_embeddings=self.vocab_size,
@@ -36,13 +37,19 @@ class BiLSTM_CRF(nn.Module):
       constraints=self.constraints
     )
 
-  def forward(self, input, input_lens):
-    # max_length = input.shape[1]
+  def create_mask(self, src):
+    mask = (src != self.pad_idx).permute(0, 1)
+    return mask
+
+  def forward(self, input, input_lens, labels):
+    # pass through bilstm
     embedded = self.dropout(self.embeddings(input))
     packed_embedded = rnn.pack_padded_sequence(embedded, input_lens, batch_first=True, enforce_sorted=False)
     packed_output, hidden = self.lstm(packed_embedded)
     output, _ = rnn.pad_packed_sequence(packed_output, batch_first=True)
     self.output = self.dropout(output)
     output = self.linear(output)
-    output.to(self.device)
+    # pass through crf
+    mask = self.create_mask(input)
+    neg_log_likelihood = -self.crf(inputs=output, tags=labels, mask=mask)
     return output
