@@ -2,5 +2,6 @@ src/env/
 src/out/
 src/__pycache__/
 src/runner_test.ipynb
+src/.ipynb_checkpoints/
 .IDEA
 .DS_Store
