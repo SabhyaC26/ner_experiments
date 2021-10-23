@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.utils.rnn as rnn
 import allennlp.modules.conditional_random_field as crf
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 
 class BiLSTM_CRF(nn.Module):
   def __init__(self, device:torch.device, vocab_size:int, num_tags:int,
@@ -44,7 +44,7 @@ class BiLSTM_CRF(nn.Module):
     return mask
 
   def forward(self, input:torch.LongTensor, input_lens:torch.LongTensor,
-              labels:torch.LongTensor, decode:bool) -> dict[str, any]:
+              labels:torch.LongTensor, decode:bool) -> Dict[str, any]:
     # pass through bilstm
     embedded = self.dropout(self.embeddings(input))
     packed_embedded = rnn.pack_padded_sequence(embedded, input_lens, batch_first=True, enforce_sorted=False)

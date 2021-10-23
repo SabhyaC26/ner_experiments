@@ -1,7 +1,7 @@
 import torch
 import collections
 from torch.utils.data import Dataset
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 UNK = '<UNK>'
 PAD = '<P>'
@@ -21,7 +21,7 @@ class Conll2003(Dataset):
     self.processed_examples = self.process_examples(self.examples)
     self.processed_labels = self.process_labels(self.labels)
 
-  def process_tags(self, ner_tags: List[str]) -> Tuple[dict[str, int], dict[int, str]]:
+  def process_tags(self, ner_tags: List[str]) -> Tuple[Dict[str, int], Dict[int, str]]:
     tags_to_idx = collections.defaultdict(int)
     idx_to_tags = collections.defaultdict(str)
     for i, tag in enumerate(ner_tags):
@@ -29,7 +29,7 @@ class Conll2003(Dataset):
       idx_to_tags[i] = tag
     return tags_to_idx, idx_to_tags
 
-  def build_vocab(self, examples: List[str]) -> Tuple[dict[str, int], dict[int, str]]:
+  def build_vocab(self, examples: List[str]) -> Tuple[Dict[str, int], Dict[int, str]]:
     vocab = set()
     for example in examples:
       for token in example:
@@ -52,7 +52,7 @@ class Conll2003(Dataset):
       proc_examples.append(proc_example)
     return proc_examples
 
-  def process_labels(self, labels: List[int]) -> list[torch.LongTensor]:
+  def process_labels(self, labels: List[int]) -> List[torch.LongTensor]:
     new_labels = []
     for label_vec in labels:
       new_labels.append(torch.LongTensor(label_vec))
