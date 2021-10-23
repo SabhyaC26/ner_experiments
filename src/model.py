@@ -2,11 +2,13 @@ import torch
 import torch.nn as nn
 import torch.nn.utils.rnn as rnn
 import allennlp.modules.conditional_random_field as crf
+from typing import List, Tuple, Optional
 
 class BiLSTM_CRF(nn.Module):
-  def __init__(self, device, vocab_size, num_tags, embedding_dim=300,
-               lstm_hidden_dim=300, lstm_num_layers=1, dropout=0.2,
-               constraints=None, pad_idx=0):
+  def __init__(self, device:torch.device, vocab_size:int, num_tags:int,
+               embedding_dim:int, lstm_hidden_dim:int, lstm_num_layers:int,
+               dropout:float,constraints:Optional[List[Tuple[int, int]]],
+               pad_idx:int):
     super(BiLSTM_CRF, self).__init__()
     self.device = device
     self.vocab_size = vocab_size
@@ -37,11 +39,12 @@ class BiLSTM_CRF(nn.Module):
       constraints=self.constraints
     )
 
-  def create_mask(self, src):
+  def create_mask(self, src:torch.LongTensor) -> torch.LongTensor:
     mask = (src != self.pad_idx).permute(0, 1)
     return mask
 
-  def forward(self, input, input_lens, labels, decode):
+  def forward(self, input:torch.LongTensor, input_lens:torch.LongTensor,
+              labels:torch.LongTensor, decode:bool) -> dict[str, any]:
     # pass through bilstm
     embedded = self.dropout(self.embeddings(input))
     packed_embedded = rnn.pack_padded_sequence(embedded, input_lens, batch_first=True, enforce_sorted=False)
