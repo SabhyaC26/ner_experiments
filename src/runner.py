@@ -49,7 +49,7 @@ def evaluate_model(model, dataloader) -> float:
                 epoch_loss += neg_log_likelihood.item()
     return epoch_loss/len(dataloader.dataset)
 
-def test_eval(test_data, model, batch_size, idx_to_tokens, tokens_to_idx, idx_to_tags):
+def test_eval(test_data, model, batch_size, tokens_to_idx, idx_to_tags):
     with torch.no_grad():
         predictions = []
         for batch_idx in range(len(test_data) // batch_size):
@@ -68,8 +68,9 @@ def test_eval(test_data, model, batch_size, idx_to_tokens, tokens_to_idx, idx_to
                     else:
                         encoded_seq.append(tokens_to_idx[UNK])
                 encoded_tokens.append(torch.LongTensor(encoded_seq))
-            batch_predictions = decode_batch(model, encoded_tokens, idx_to_tags=idx_to_tags)
-            # print('comparison: ', gold_labels, batch_predictions)
+            batch_predictions = decode_batch(model=model, batch=encoded_tokens, idx_to_tags=idx_to_tags)
+            print('comparison: ', gold_labels, batch_predictions)
+            break
     # change when doing actual calcs
     return 0.0
 
@@ -140,7 +141,7 @@ def main(args):
         end_time = time.time()
 
         test_f1 = test_eval(test_data=test, model=bilstm_crf, batch_size=args.batch_size,
-                            idx_to_tags=idx_to_tokens, tags_to_idx=tokens_to_idx)
+                            tokens_to_idx=tokens_to_idx, idx_to_tags=train_data.idx_to_tags)
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
