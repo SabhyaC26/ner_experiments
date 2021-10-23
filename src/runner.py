@@ -16,11 +16,11 @@ def load_data():
   test_dataset = conll_dataset['test']
   return train_dataset, valid_dataset, test_dataset
 
-def get_device():
+def get_device() -> torch.device:
   device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
   return device
 
-def train_model(model, dataloader, optimizer, clip):
+def train_model(model, dataloader, optimizer, clip:int) -> float:
   model.train()
   epoch_loss = 0
   with tqdm(dataloader, unit='batch') as tqdm_loader:
@@ -34,7 +34,7 @@ def train_model(model, dataloader, optimizer, clip):
       epoch_loss += neg_log_likelihood.item()
   return epoch_loss/len(dataloader.dataset)
 
-def evaluate_model(model, dataloader):
+def evaluate_model(model, dataloader) -> float:
   model.eval()
   epoch_loss = 0
   with torch.no_grad():
@@ -46,7 +46,7 @@ def evaluate_model(model, dataloader):
   return epoch_loss/len(dataloader.dataset)
 
 # batch decoding - hasn't been tested
-def decode_batch(model, batch, idx_to_tags):
+def decode_batch(model, batch, idx_to_tags:dict[int, str]):
   model.eval()
   with torch.no_grad():
     padded_batch = pad_test_batch(batch)
