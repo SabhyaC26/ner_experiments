@@ -17,3 +17,9 @@ def pad_test_batch(batch):
   x_pad= rnn.pad_sequence([x for x in batch], padding_value=0, batch_first=True)
   x_pad = x_pad.to(device)
   return x_pad, x_lens
+
+def format_output_labels(tags):
+  pass
+
+def entity_level_mean_f1(preds, gold):
+  pass
