@@ -1,12 +1,15 @@
 import argparse
 import datasets
+import math
+import os
+import time
 import torch
 import allennlp.modules.conditional_random_field as crf
 ###
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from data import Conll2003, UNK, PAD
-from util import pad_batch, pad_test_batch
+from util import pad_batch, pad_test_batch, count_parameters, calculate_epoch_time
 from model import BiLSTM_CRF
 from typing import Dict
 
@@ -45,6 +48,9 @@ def evaluate_model(model, dataloader) -> float:
         neg_log_likelihood = result['loss']
         epoch_loss += neg_log_likelihood.item()
   return epoch_loss/len(dataloader.dataset)
+
+def get_metrics(test_data, model):
+  pass
 
 # batch decoding - hasn't been tested
 def decode_batch(model, batch, idx_to_tags:Dict[int, str]):
@@ -88,12 +94,31 @@ def main(args):
   )
   bilstm_crf.to(device)
 
+  # print number of model params
+  num_params = count_parameters(bilstm_crf)
+  print(f'The model has {num_params:,} trainable parameters')
+
   # run model
   optimizer = torch.optim.Adam(bilstm_crf.parameters())
+
+  best_val_loss = float('-inf')
+
   for epoch in range(args.epochs):
+    start_time = time.time()
     train_loss = train_model(model=bilstm_crf, dataloader=train_dataloader, optimizer=optimizer, clip=args.clip)
     val_loss = evaluate_model(model=bilstm_crf, dataloader=val_dataloader)
-    print('results: ', epoch+1, train_loss, val_loss)
+    end_time = time.time()
+
+
+
+    if val_loss < best_val_loss:
+      best_val_loss = val_loss
+      torch.save(bilstm_crf.state_dict(), os.path.join(args.out, 'bilstm_crf.pt'))
+
+    epoch_mins, epoch_secs = calculate_epoch_time(start_time, end_time)
+    print(f'Epoch: {epoch + 1:02} | Time: {epoch_mins}m {epoch_secs}s')
+    print(f'\tTrain Loss: {train_loss:.3f}')
+    print(f'\t Val. Loss: {val_loss:.3f}')
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Args for BiLSTM_CRF')

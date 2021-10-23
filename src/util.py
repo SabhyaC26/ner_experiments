@@ -1,6 +1,17 @@
+import time
 import torch
 import torch.nn.utils.rnn as rnn
-from typing import List, Tuple
+from typing import Tuple
+from datasets import metric
+
+def count_parameters(model) -> int:
+  return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+def calculate_epoch_time(start_time, end_time) -> Tuple[int, int]:
+  elapsed_time = end_time - start_time
+  elapsed_mins = int(elapsed_time / 60)
+  elapsed_secs = int(elapsed_time - (elapsed_mins * 60))
+  return elapsed_mins, elapsed_secs
 
 def pad_batch(batch: Tuple[torch.LongTensor, torch.LongTensor]) \
     -> Tuple[torch.LongTensor, torch.LongTensor, torch.LongTensor]:
