@@ -99,12 +99,12 @@ def main(args):
 
     train_data = Conll2003(
         tokens=train['tokens'], labels=train['ner_tags'],
-        ner_tags=ner_tags, idx_to_tokens=idx_to_tokens, tokens_to_idx=tokens_to_idx,
+        idx_to_tokens=idx_to_tokens, tokens_to_idx=tokens_to_idx,
         tags_to_idx=tags_to_idx, idx_to_tags=idx_to_tags
     )
     val_data = Conll2003(
         tokens=val['tokens'], labels=val['ner_tags'],
-        ner_tags=ner_tags, idx_to_tokens=idx_to_tokens, tokens_to_idx=tokens_to_idx,
+        idx_to_tokens=idx_to_tokens, tokens_to_idx=tokens_to_idx,
         tags_to_idx=tags_to_idx, idx_to_tags=idx_to_tags
     )
     # build dataloaders
