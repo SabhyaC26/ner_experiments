@@ -27,7 +27,8 @@ class Conll2003(Dataset):
         self.idx_to_tokens = idx_to_tokens
 
         # map examples to encodings
-        self.processed_examples = self.process_examples(self.examples)
+        # TODO: map tensors on the fly
+        self.procesed_examples = self.process_examples(self.examples)
         self.processed_labels = self.process_labels(self.labels)
 
     def process_tags(self, ner_tags: List[str]) -> Tuple[Dict[str, int], Dict[int, str]]:

@@ -17,6 +17,8 @@ from util import (build_mappings, calculate_epoch_time,
                   pad_test_batch)
 
 
+# TODO: change prints to logs
+
 def load_data():
     conll_dataset = datasets.load_dataset('conll2003')
     train = conll_dataset['train']
