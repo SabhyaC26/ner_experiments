@@ -92,16 +92,16 @@ def decode_batch(model, batch:List[torch.LongTensor], idx_to_tags:Dict[int, str]
 
 def main(args):
     train, val, test = load_data()
-    test = test.select(range(100))
+    # test = test.select(range(100))
     ner_tags = train.features['ner_tags'].feature.names
     # get mappings + build datasets
     tokens_to_idx, idx_to_tokens = build_mappings(train['tokens'])
     train_data = Conll2003(
-        examples=train['tokens'][:1000], labels=train['ner_tags'][:1000],
+        examples=train['tokens'], labels=train['ner_tags'],
         ner_tags=ner_tags, idx_to_tokens=idx_to_tokens, tokens_to_idx=tokens_to_idx
     )
     val_data = Conll2003(
-        examples=val['tokens'][:1000], labels=val['ner_tags'][:1000],
+        examples=val['tokens'], labels=val['ner_tags'],
         ner_tags=ner_tags, idx_to_tokens=idx_to_tokens, tokens_to_idx=tokens_to_idx
     )
     # build dataloaders
@@ -152,7 +152,6 @@ def main(args):
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             out_path = os.path.join(args.out, 'bilst_crf.pt')
-            print(out_path)
             torch.save(bilstm_crf.state_dict(), out_path)
 
         epoch_mins, epoch_secs = calculate_epoch_time(start_time, end_time)

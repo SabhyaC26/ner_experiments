@@ -41,7 +41,13 @@ class Conll2003(Dataset):
     def process_examples(self, examples: List[str]) -> List[torch.LongTensor]:
         proc_examples = []
         for example in examples:
-            proc_example = torch.LongTensor([self.tokens_to_idx[t] for t in example]).to(device)
+            proc_example = []
+            for token in example:
+                if token in self.tokens_to_idx:
+                    proc_example.append(self.tokens_to_idx[token])
+                else:
+                    proc_example.append(self.tokens_to_idx[UNK])
+            proc_example = torch.LongTensor(proc_example).to(device)
             proc_examples.append(proc_example)
         return proc_examples
 
