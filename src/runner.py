@@ -1,28 +1,22 @@
 import argparse
-import datasets
-import math
 import os
 import time
-import torch
+from typing import Dict, List
 import allennlp.modules.conditional_random_field as crf
-###
+import datasets
+import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from data import Conll2003, UNK, PAD
-from util import pad_batch, pad_test_batch, count_parameters, calculate_epoch_time, build_mappings
+from data import Conll2003, PTPU, UNK, PAD
 from model import BiLSTM_CRF
-from typing import Dict
+from util import pad_batch, pad_test_batch, count_parameters, calculate_epoch_time, build_mappings, compute_entity_level_f1
 
 def load_data():
     conll_dataset = datasets.load_dataset('conll2003')
-    train_dataset = conll_dataset['train']
-    valid_dataset = conll_dataset['validation']
-    test_dataset = conll_dataset['test']
-    return train_dataset, valid_dataset, test_dataset
-
-def get_device() -> torch.device:
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    return device
+    train = conll_dataset['train']
+    val = conll_dataset['validation']
+    test = conll_dataset['test']
+    return train, val, test
 
 def train_model(model, dataloader, optimizer, clip:int) -> float:
     model.train()
@@ -49,18 +43,24 @@ def evaluate_model(model, dataloader) -> float:
                 epoch_loss += neg_log_likelihood.item()
     return epoch_loss/len(dataloader.dataset)
 
-def test_eval(test_data, model, batch_size, tokens_to_idx, idx_to_tags):
+def test_eval(test_data, model, batch_size:int, idx_to_tokens:Dict[int, str],
+              tokens_to_idx:Dict[str, int], idx_to_tags:Dict[int, str]):
     with torch.no_grad():
         predictions = []
-        for batch_idx in range(len(test_data) // batch_size):
-            batch = test_data.select(range(
-                batch_size * batch_idx,
-                batch_size * (batch_idx + 1)
-            ))
-            gold_labels = batch['ner_tags']
-            tokens = batch['tokens']
+        for batch_idx in range((len(test_data) // batch_size) + 1):
+            batch = None
+            if (batch_size * (batch_idx + 1)) > len(test_data):
+                batch = test_data.select(range(
+                    batch_size * (batch_idx),
+                    len(test_data)
+                ))
+            else:
+                batch = test_data.select(range(
+                    batch_size * batch_idx,
+                    batch_size * (batch_idx + 1)
+                ))
             encoded_tokens = []
-            for token_seq in tokens:
+            for token_seq in batch['tokens']:
                 encoded_seq = []
                 for token in token_seq:
                     if token in tokens_to_idx:
@@ -68,14 +68,12 @@ def test_eval(test_data, model, batch_size, tokens_to_idx, idx_to_tags):
                     else:
                         encoded_seq.append(tokens_to_idx[UNK])
                 encoded_tokens.append(torch.LongTensor(encoded_seq))
-            batch_predictions = decode_batch(model=model, batch=encoded_tokens, idx_to_tags=idx_to_tags)
-            print('comparison: ', gold_labels, batch_predictions)
-            break
-    # change when doing actual calcs
-    return 0.0
+            batch_predictions = decode_batch(model, encoded_tokens, idx_to_tags=idx_to_tags)
+            for pred in batch_predictions:
+                predictions.append(pred)
+    return predictions
 
-# batch decoding - hasn't been tested
-def decode_batch(model, batch, idx_to_tags:Dict[int, str]):
+def decode_batch(model, batch:List[torch.LongTensor], idx_to_tags:Dict[int, str]):
     model.eval()
     with torch.no_grad():
         padded_batch = pad_test_batch(batch)
@@ -83,25 +81,22 @@ def decode_batch(model, batch, idx_to_tags:Dict[int, str]):
         result = model(x_padded, x_lens, None, decode=True)
         actual_pred_tags = []
         for pred, _ in result['tags']:
-            actual_pred_tags.append(pred)
-            # actual_pred_tags.append([idx_to_tags[i] for i in pred])
+            actual_pred_tags.append([idx_to_tags[i] for i in pred])
     return actual_pred_tags
 
 def main(args):
     train, val, test = load_data()
+    test = test.select(range(50))
     ner_tags = train.features['ner_tags'].feature.names
-    device = get_device()
     # get mappings + build datasets
     tokens_to_idx, idx_to_tokens = build_mappings(train['tokens'])
     train_data = Conll2003(
-        examples=train['tokens'][:100], labels=train['ner_tags'][:100],
-        ner_tags=ner_tags, idx_to_tokens=idx_to_tokens, tokens_to_idx=tokens_to_idx,
-        device=device
+        examples=train['tokens'][:1000], labels=train['ner_tags'][:1000],
+        ner_tags=ner_tags, idx_to_tokens=idx_to_tokens, tokens_to_idx=tokens_to_idx
     )
     val_data = Conll2003(
-        examples=val['tokens'][:100], labels=val['ner_tags'][:100],
-        ner_tags=ner_tags, idx_to_tokens=idx_to_tokens, tokens_to_idx=tokens_to_idx,
-        device=device
+        examples=val['tokens'][:10], labels=val['ner_tags'][:10],
+        ner_tags=ner_tags, idx_to_tokens=idx_to_tokens, tokens_to_idx=tokens_to_idx
     )
     # build dataloaders
     train_dataloader = DataLoader(dataset=train_data, batch_size=args.batch_size, shuffle=True, collate_fn=pad_batch)
@@ -113,7 +108,6 @@ def main(args):
         labels=train_data.idx_to_tags
     )
     bilstm_crf = BiLSTM_CRF(
-        device=device,
         vocab_size=len(train_data.idx_to_tokens.keys()),
         num_tags=len(train_data.idx_to_tags.keys()),
         embedding_dim=args.embedding_dim,
@@ -123,7 +117,7 @@ def main(args):
         constraints=crf_constraints,
         pad_idx=train_data.tokens_to_idx[PAD]
     )
-    bilstm_crf.to(device)
+    bilstm_crf.to(PTPU)
 
     # print number of model params
     num_params = count_parameters(bilstm_crf)
@@ -131,17 +125,23 @@ def main(args):
 
     # run model
     optimizer = torch.optim.Adam(bilstm_crf.parameters())
-
     best_val_loss = float('-inf')
-
     for epoch in range(args.epochs):
         start_time = time.time()
         train_loss = train_model(model=bilstm_crf, dataloader=train_dataloader, optimizer=optimizer, clip=args.clip)
         val_loss = evaluate_model(model=bilstm_crf, dataloader=val_dataloader)
         end_time = time.time()
 
-        test_f1 = test_eval(test_data=test, model=bilstm_crf, batch_size=args.batch_size,
-                            tokens_to_idx=tokens_to_idx, idx_to_tags=train_data.idx_to_tags)
+        predicted_labels= test_eval(test_data=test, model=bilstm_crf, batch_size=args.batch_size,
+                               idx_to_tokens=idx_to_tokens, tokens_to_idx=tokens_to_idx,
+                               idx_to_tags=train_data.idx_to_tags)
+
+        gold_labels = []
+        for label_lst in test['ner_tags']:
+            gold_labels.append([train_data.idx_to_tags[i] for i in label_lst])
+
+        print(len(predicted_labels), len(gold_labels))
+        p, r, f1 = compute_entity_level_f1(predicted_labels=predicted_labels, gold_labels=gold_labels)
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
@@ -151,6 +151,9 @@ def main(args):
         print(f'Epoch: {epoch + 1:02} | Time: {epoch_mins}m {epoch_secs}s')
         print(f'\tTrain Loss: {train_loss:.3f}')
         print(f'\t Val. Loss: {val_loss:.3f}')
+        print(f'\t Test F1: {f1:.3f}')
+        print(f'\t Test Precision: {p:.3f}')
+        print(f'\t Test Recall: {r:.3f}')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Args for BiLSTM_CRF')
@@ -162,5 +165,6 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', help='train/val batch size', default=64, type=int)
     parser.add_argument('--clip', help='gradient clipping parameter', default=1, type=int)
     parser.add_argument('--epochs', help='number of epochs', default=5, type=int)
+    parser.add_argument('--lr', help='learning rate for optimizer', type=float)
     args = parser.parse_args()
     main(args)

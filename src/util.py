@@ -1,9 +1,7 @@
 import collections
-import time
+from typing import Tuple, List, Dict
 import torch
 import torch.nn.utils.rnn as rnn
-from typing import Tuple, List, Dict
-from datasets import metric
 from data import PAD, UNK
 
 def count_parameters(model) -> int:
@@ -45,12 +43,52 @@ def build_mappings(examples: List[str]) -> Tuple[Dict[str, int], Dict[int, str]]
     tokens_to_idx[UNK] = 1
     idx_to_tokens[1] = UNK
     for i, token in enumerate(sorted(vocab)):
-        tokens_to_idx[token] = i + 1
-        idx_to_tokens[i + 1] = token
+        tokens_to_idx[token] = i + 2
+        idx_to_tokens[i + 2] = token
     return tokens_to_idx, idx_to_tokens
 
-def format_output_labels(tags):
-    pass
+# metric code reference: https://github.com/kamalkraj/Named-Entity-Recognition-with-Bidirectional-LSTM-CNNs/blob/master/validation.py
+def compute_entity_level_f1(predicted_labels:List[List[str]], gold_labels:List[List[str]]) -> float:
+    precision = compute_precision(predicted_labels=predicted_labels, gold_labels=gold_labels)
+    recall = compute_precision(predicted_labels=gold_labels, gold_labels=predicted_labels)
+    f1 = 0
+    if (precision + recall) > 0:
+        f1 = (2 * precision * recall) / (precision + recall)
+    return precision, recall, f1
 
-def entity_level_mean_f1(preds, gold):
-    pass
+def compute_precision(predicted_labels:List[List[str]], gold_labels:List[List[str]]) -> float:
+    assert (len(predicted_labels) == len(gold_labels))
+    num_correct = 0
+    count = 0
+    # loop through labels
+    for labels_idx in range(len(predicted_labels)):
+        pred = predicted_labels[labels_idx]
+        gold = gold_labels[labels_idx]
+        assert (len(pred) == len(gold))
+        idx = 0
+        while idx < len(pred):
+            # start of a new entity span
+            if pred[idx][0] == 'B':
+                count += 1
+                if pred[idx] == gold[idx]:
+                    idx += 1
+                    still_correct = True
+                    # scan all I tags
+                    while idx < len(pred) and pred[idx][0] == 'I':
+                        if pred[idx] != gold[idx]:
+                            still_correct = False
+                        idx += 1
+                    if idx < len(pred):
+                        # the gold entity was longer than the pred
+                        if gold[idx][0] == 'I':
+                            still_correct = False
+                    if still_correct:
+                        num_correct += 1
+                else:
+                    idx += 1
+            else:
+                idx += 1
+    precision = 0
+    if count > 0:
+        precision = float(num_correct) / count
+    return precision

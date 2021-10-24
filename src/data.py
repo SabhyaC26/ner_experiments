@@ -6,14 +6,19 @@ from typing import List, Tuple, Dict
 UNK = '<UNK>'
 PAD = '<P>'
 
+def get_device() -> torch.device:
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    return device
+
+PTPU =  get_device()
+
 class Conll2003(Dataset):
     def __init__(self, examples:List[str], labels:List[int],
                  idx_to_tokens:Dict[int, str], tokens_to_idx:Dict[str, int],
-                 ner_tags:List[str], device: torch.device):
+                 ner_tags:List[str]):
         self.examples = examples
         self.labels = labels
         self.ner_tags = ner_tags
-        self.device = device
 
         # set up mappings
         self.tags_to_idx, self.idx_to_tags = self.process_tags(self.ner_tags)
@@ -35,7 +40,7 @@ class Conll2003(Dataset):
     def process_examples(self, examples: List[str]) -> List[torch.LongTensor]:
         proc_examples = []
         for example in examples:
-            proc_example = torch.LongTensor([self.tokens_to_idx[t] for t in example]).to(self.device)
+            proc_example = torch.LongTensor([self.tokens_to_idx[t] for t in example]).to(PTPU)
             proc_examples.append(proc_example)
         return proc_examples
 
