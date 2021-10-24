@@ -50,7 +50,7 @@ def build_token_mappings(examples: List[str]) -> Tuple[Dict[str, int], Dict[int,
         idx_to_tokens[i + 2] = token
     return tokens_to_idx, idx_to_tokens
 
-def build_tag_mappings(self, ner_tags: List[str]) -> Tuple[Dict[str, int], Dict[int, str]]:
+def build_tag_mappings(ner_tags: List[str]) -> Tuple[Dict[str, int], Dict[int, str]]:
     tags_to_idx = collections.defaultdict(int)
     idx_to_tags = collections.defaultdict(str)
     for i, tag in enumerate(ner_tags):
