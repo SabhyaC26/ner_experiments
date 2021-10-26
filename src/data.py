@@ -14,7 +14,7 @@ def get_device() -> torch.device:
 device = get_device()
 
 class Conll2003(Dataset):
-    def __init__(self, tokens:List[str], labels:List[int],
+    def __init__(self, tokens:List[List[str]], labels:List[List[int]],
                  idx_to_tokens:Dict[int, str], tokens_to_idx:Dict[str, int],
                  tags_to_idx, idx_to_tags):
         self.tokens = tokens
