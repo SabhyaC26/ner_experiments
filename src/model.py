@@ -41,7 +41,10 @@ class BiLSTM_CRF(nn.Module):
             num_tags=self.num_tags,
             constraints=self.constraints
         )
-
+    """
+    @todo Check for 0s in non pad idxs
+    @body When fixing the masking, I saw 0s in non pad positions --> could be a bug
+    """
     def create_mask(self, src:torch.LongTensor) -> torch.LongTensor:
         mask = (src != self.pad_idx).permute(0, 1)
         return mask
