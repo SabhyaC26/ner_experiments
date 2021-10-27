@@ -1,8 +1,12 @@
-import torch
 import argparse
 
-from util.util import *
+import torch
+from torch.utils.data import DataLoader
+
+from data.conll_char import Conll2003_Char
 from util.conll_util import *
+from util.util import *
+
 
 def main(args):
     # init logging
@@ -15,8 +19,23 @@ def main(args):
     tokens_to_idx, idx_to_tokens = build_token_mappings(train['tokens'])
     tags_to_idx, idx_to_tags = build_tag_mappings(ner_tags)
     chars_to_idx, idx_to_chars = build_char_mappings(train['tokens'])
-    print(chars_to_idx)
 
+    train_data = Conll2003_Char(
+        tokens=train['tokens'], labels=train['ner_tags'],
+        idx_to_tokens=idx_to_tokens, tokens_to_idx=tokens_to_idx,
+        idx_to_tags=idx_to_tags, tags_to_idx=tags_to_idx,
+        idx_to_chars=idx_to_chars, chars_to_idx=chars_to_idx
+    )
+    val_data = Conll2003_Char(
+        tokens=val['tokens'], labels=val['ner_tags'],
+        idx_to_tokens=idx_to_tokens, tokens_to_idx=tokens_to_idx,
+        idx_to_tags=idx_to_tags, tags_to_idx=tags_to_idx,
+        idx_to_chars=idx_to_chars, chars_to_idx=chars_to_idx
+    )
+
+    # @todo: will need a new collate function for this
+    # train_dataloader = DataLoader(dataset=train_data, batch_size=args.batch_size, shuffle=True, collate_fn=pad_batch)
+    # val_dataloader = DataLoader(dataset=val_data, batch_size=args.batch_size, shuffle=True, collate_fn=pad_batch)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Args for BiLSTM_CRF')

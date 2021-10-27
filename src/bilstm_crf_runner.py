@@ -5,7 +5,7 @@ import allennlp.modules.conditional_random_field as crf
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from datasets.conll import Conll2003
+from data.conll import Conll2003
 from models.bilstm_crf import BiLSTM_CRF
 from util.util import *
 from util.conll_util import *

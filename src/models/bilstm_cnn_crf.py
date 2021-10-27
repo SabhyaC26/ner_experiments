@@ -12,5 +12,6 @@ class BiLSTM_CNN_CRF(nn.Module):
     def __init__(self):
         super(BiLSTM_CNN_CRF, self).__init__()
 
-    def forward(self, src: torch.LongTensor):
+    # @todo figure out the mechanics of char tensors word tensors
+    def forward(self, src: torch.LongTensor, char: torch.LongTensor):
         pass
