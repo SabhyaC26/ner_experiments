@@ -10,11 +10,11 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from data import PAD, UNK, Conll2003, device
+from data import Conll2003, device
 from model import BiLSTM_CRF
-from util import (build_token_mappings, build_tag_mappings, calculate_epoch_time,
-                  compute_entity_level_f1, count_parameters, pad_batch,
-                  pad_test_batch)
+from src.util.util import (build_token_mappings, build_tag_mappings, calculate_epoch_time,
+                           compute_entity_level_f1, count_parameters, pad_batch,
+                           pad_test_batch, PAD, UNK)
 
 
 def load_data():

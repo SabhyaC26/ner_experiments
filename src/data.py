@@ -3,16 +3,7 @@ from typing import Dict, List, Tuple
 import torch
 from torch.utils.data import Dataset
 
-UNK = '<UNK>'
-PAD = '<P>'
-
-
-def get_device() -> torch.device:
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    return device
-
-
-device = get_device()
+from src.util.util import device, UNK
 
 
 class Conll2003(Dataset):
