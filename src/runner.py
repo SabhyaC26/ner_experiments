@@ -10,8 +10,8 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from data import Conll2003, device
-from model import BiLSTM_CRF
+from datasets.conll import Conll2003, device
+from models.bilstm_crf import BiLSTM_CRF
 from util.util import (build_token_mappings, build_tag_mappings, calculate_epoch_time,
                            compute_entity_level_f1, count_parameters, pad_batch,
                            pad_test_batch, PAD, UNK)
