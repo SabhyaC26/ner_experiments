@@ -2,6 +2,8 @@ src/env/
 src/out/
 src/__pycache__/
 src/runner_test.ipynb
-src/.ipynb_checkpoints/
+src/notebooks/
+src/util/embeddings/
+*.pyc
 .IDEA
 .DS_Store
