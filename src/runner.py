@@ -16,6 +16,7 @@ from util import (build_token_mappings, build_tag_mappings, calculate_epoch_time
                   compute_entity_level_f1, count_parameters, pad_batch,
                   pad_test_batch)
 
+
 def load_data():
     conll_dataset = datasets.load_dataset('conll2003')
     train = conll_dataset['train']
@@ -23,7 +24,8 @@ def load_data():
     test = conll_dataset['test']
     return train, val, test
 
-def train_model(model, dataloader, optimizer, clip:int) -> float:
+
+def train_model(model, dataloader, optimizer, clip: int) -> float:
     model.train()
     epoch_loss = 0
     with tqdm(dataloader, unit='batch') as tqdm_loader:
@@ -35,7 +37,8 @@ def train_model(model, dataloader, optimizer, clip:int) -> float:
             torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
             optimizer.step()
             epoch_loss += neg_log_likelihood.item()
-    return epoch_loss/len(dataloader.dataset)
+    return epoch_loss / len(dataloader.dataset)
+
 
 def evaluate_model(model, dataloader) -> float:
     model.eval()
@@ -46,10 +49,11 @@ def evaluate_model(model, dataloader) -> float:
                 result = model(x_padded, x_lens, y_padded, decode=False)
                 neg_log_likelihood = result['loss']
                 epoch_loss += neg_log_likelihood.item()
-    return epoch_loss/len(dataloader.dataset)
+    return epoch_loss / len(dataloader.dataset)
 
-def test_model(test_data, model, batch_size:int, tokens_to_idx:Dict[str, int],
-               idx_to_tags:Dict[int, str]):
+
+def test_model(test_data, model, batch_size: int, tokens_to_idx: Dict[str, int],
+               idx_to_tags: Dict[int, str]):
     with torch.no_grad():
         predictions = []
         for batch_idx in range((len(test_data) // batch_size) + 1):
@@ -77,7 +81,8 @@ def test_model(test_data, model, batch_size:int, tokens_to_idx:Dict[str, int],
                 predictions.append(pred)
     return predictions
 
-def decode_batch(model, batch:List[torch.LongTensor], idx_to_tags:Dict[int, str]):
+
+def decode_batch(model, batch: List[torch.LongTensor], idx_to_tags: Dict[int, str]):
     model.eval()
     with torch.no_grad():
         padded_batch = pad_test_batch(batch)
@@ -88,14 +93,15 @@ def decode_batch(model, batch:List[torch.LongTensor], idx_to_tags:Dict[int, str]
             actual_pred_tags.append([idx_to_tags[i] for i in pred])
     return actual_pred_tags
 
+
 def main(args):
     # init logger
-    log_ouput = os.path.join(args.out, 'logs', f'run_log_{args.run_id}')
-    logging.basicConfig(filename=log_ouput,
-                       filemode='a',
-                       format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-                       datefmt='%H:%M:%S',
-                       level=logging.DEBUG)
+    log_output = os.path.join(args.out, 'logs', f'run_log_{args.run_id}')
+    logging.basicConfig(filename=log_output,
+                        filemode='a',
+                        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                        datefmt='%H:%M:%S',
+                        level=logging.DEBUG)
     LOG = logging.getLogger('BiLSTM-CRF')
     LOG.info('BiLSTM-CRF Model on Conll-2003 NER')
 
@@ -108,12 +114,12 @@ def main(args):
     train_data = Conll2003(
         tokens=train['tokens'], labels=train['ner_tags'],
         idx_to_tokens=idx_to_tokens, tokens_to_idx=tokens_to_idx,
-        tags_to_idx=tags_to_idx, idx_to_tags=idx_to_tags
+        idx_to_tags=idx_to_tags, tags_to_idx=tags_to_idx
     )
     val_data = Conll2003(
         tokens=val['tokens'], labels=val['ner_tags'],
         idx_to_tokens=idx_to_tokens, tokens_to_idx=tokens_to_idx,
-        tags_to_idx=tags_to_idx, idx_to_tags=idx_to_tags
+        idx_to_tags=idx_to_tags, tags_to_idx=tags_to_idx
     )
     train_dataloader = DataLoader(dataset=train_data, batch_size=args.batch_size, shuffle=True, collate_fn=pad_batch)
     val_dataloader = DataLoader(dataset=val_data, batch_size=args.batch_size, shuffle=True, collate_fn=pad_batch)
@@ -148,8 +154,8 @@ def main(args):
         val_loss = evaluate_model(model=bilstm_crf, dataloader=val_dataloader)
         end_time = time.time()
 
-        predicted_labels= test_model(test_data=test, model=bilstm_crf, batch_size=args.batch_size,
-                                     tokens_to_idx=tokens_to_idx, idx_to_tags=idx_to_tags)
+        predicted_labels = test_model(test_data=test, model=bilstm_crf, batch_size=args.batch_size,
+                                      tokens_to_idx=tokens_to_idx, idx_to_tags=idx_to_tags)
 
         gold_labels = []
         for label_lst in test['ner_tags']:
@@ -163,13 +169,14 @@ def main(args):
             torch.save(bilstm_crf.state_dict(), out_path)
 
         epoch_mins, epoch_secs = calculate_epoch_time(start_time, end_time)
-        LOG.info(f"#######################EPOCH_{epoch+1}#######################")
+        LOG.info(f"#######################EPOCH_{epoch + 1}#######################")
         LOG.info(f'Epoch: {epoch + 1:02} | Time: {epoch_mins}m {epoch_secs}s')
         LOG.info(f'\tTrain Loss: {train_loss:.3f}')
         LOG.info(f'\t Val. Loss: {val_loss:.3f}')
         LOG.info(f'\t Test F1: {f1:.3f}')
         LOG.info(f'\t Test Precision: {p:.3f}')
         LOG.info(f'\t Test Recall: {r:.3f}')
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Args for BiLSTM_CRF')

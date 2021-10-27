@@ -29,7 +29,7 @@ def pad_batch(batch: Tuple[torch.LongTensor, torch.LongTensor]) \
 def pad_test_batch(batch: torch.LongTensor) -> Tuple[torch.LongTensor, torch.LongTensor]:
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     x_lens = torch.LongTensor([len(x) for x in batch])
-    x_pad= rnn.pad_sequence([x for x in batch], padding_value=0, batch_first=True)
+    x_pad = rnn.pad_sequence(batch, padding_value=0, batch_first=True)
     x_pad = x_pad.to(device)
     return x_pad, x_lens
 
@@ -58,7 +58,7 @@ def build_tag_mappings(ner_tags: List[str]) -> Tuple[Dict[str, int], Dict[int, s
     return tags_to_idx, idx_to_tags
 
 # metric code reference: https://github.com/kamalkraj/Named-Entity-Recognition-with-Bidirectional-LSTM-CNNs/blob/master/validation.py
-def compute_entity_level_f1(predicted_labels:List[List[str]], gold_labels:List[List[str]]) -> float:
+def compute_entity_level_f1(predicted_labels: List[List[str]], gold_labels: List[List[str]]) -> float:
     precision = compute_precision(predicted_labels=predicted_labels, gold_labels=gold_labels)
     recall = compute_precision(predicted_labels=gold_labels, gold_labels=predicted_labels)
     f1 = 0
@@ -66,7 +66,7 @@ def compute_entity_level_f1(predicted_labels:List[List[str]], gold_labels:List[L
         f1 = (2 * precision * recall) / (precision + recall)
     return precision, recall, f1
 
-def compute_precision(predicted_labels:List[List[str]], gold_labels:List[List[str]]) -> float:
+def compute_precision(predicted_labels: List[List[str]], gold_labels: List[List[str]]) -> float:
     assert (len(predicted_labels) == len(gold_labels))
     num_correct = 0
     count = 0
