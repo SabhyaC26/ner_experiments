@@ -15,6 +15,7 @@ from model import BiLSTM_CRF
 from util.util import (build_token_mappings, build_tag_mappings, calculate_epoch_time,
                            compute_entity_level_f1, count_parameters, pad_batch,
                            pad_test_batch, PAD, UNK)
+from util.glove import load_glove_embeddings
 
 
 def load_data():
@@ -124,6 +125,13 @@ def main(args):
     train_dataloader = DataLoader(dataset=train_data, batch_size=args.batch_size, shuffle=True, collate_fn=pad_batch)
     val_dataloader = DataLoader(dataset=val_data, batch_size=args.batch_size, shuffle=True, collate_fn=pad_batch)
 
+    # load glove embeddings
+    LOG.info('Loading glove embeddings.')
+    glove_folder = 'util/embeddings/glove/'
+    glove_embeddings = load_glove_embeddings(glove_folder=glove_folder, embedding_dim=args.embedding_dim,
+                                             init='zeros', tokens_to_idx=tokens_to_idx)
+    LOG.info('Glove embeddings have been loaded')
+
     # define model
     crf_constraints = crf.allowed_transitions(
         constraint_type='BIO',
@@ -133,7 +141,7 @@ def main(args):
         vocab_size=len(train_data.idx_to_tokens.keys()),
         num_tags=len(train_data.idx_to_tags.keys()),
         embedding_dim=args.embedding_dim,
-        embeddings=None,
+        embeddings=glove_embeddings,
         lstm_hidden_dim=args.hidden_dim,
         lstm_num_layers=args.num_layers,
         dropout=args.dropout,
