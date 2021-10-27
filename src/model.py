@@ -23,7 +23,7 @@ class BiLSTM_CRF(nn.Module):
         if self.embeddings is not None:
             self.embedding_layer = nn.Embedding.from_pretrained(
                 embeddings=embeddings,
-                freeze=True,
+                freeze=False,
                 padding_idx=0
             )
         else:

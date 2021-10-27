@@ -108,17 +108,17 @@ def main(args):
 
     # mappings + datasets + dataloaders
     train, val, test = load_data()
-    test = test.select(range(100))
+    # test = test.select(range(100))
     ner_tags = train.features['ner_tags'].feature.names
     tokens_to_idx, idx_to_tokens = build_token_mappings(train['tokens'])
     tags_to_idx, idx_to_tags = build_tag_mappings(ner_tags)
     train_data = Conll2003(
-        tokens=train['tokens'][:100], labels=train['ner_tags'][:100],
+        tokens=train['tokens'], labels=train['ner_tags'],
         idx_to_tokens=idx_to_tokens, tokens_to_idx=tokens_to_idx,
         idx_to_tags=idx_to_tags, tags_to_idx=tags_to_idx
     )
     val_data = Conll2003(
-        tokens=val['tokens'][:100], labels=val['ner_tags'][:100],
+        tokens=val['tokens'], labels=val['ner_tags'],
         idx_to_tokens=idx_to_tokens, tokens_to_idx=tokens_to_idx,
         idx_to_tags=idx_to_tags, tags_to_idx=tags_to_idx
     )
