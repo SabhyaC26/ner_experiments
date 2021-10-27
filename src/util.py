@@ -33,7 +33,7 @@ def pad_test_batch(batch: torch.LongTensor) -> Tuple[torch.LongTensor, torch.Lon
     x_pad = x_pad.to(device)
     return x_pad, x_lens
 
-def build_token_mappings(examples: List[str]) -> Tuple[Dict[str, int], Dict[int, str]]:
+def build_token_mappings(examples: List[List[str]]) -> Tuple[Dict[str, int], Dict[int, str]]:
     vocab = set()
     for example in examples:
         for token in example:

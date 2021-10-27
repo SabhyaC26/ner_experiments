@@ -16,7 +16,7 @@ device = get_device()
 class Conll2003(Dataset):
     def __init__(self, tokens:List[List[str]], labels:List[List[int]],
                  idx_to_tokens:Dict[int, str], tokens_to_idx:Dict[str, int],
-                 tags_to_idx, idx_to_tags):
+                 tags_to_idx:Dict[str, int], idx_to_tags:Dict[int, str]):
         self.tokens = tokens
         self.labels = labels
         self.tags_to_idx = tags_to_idx

@@ -48,7 +48,6 @@ class BiLSTM_CRF(nn.Module):
 
     def forward(self, input:torch.LongTensor, input_lens:torch.LongTensor,
                 labels:torch.LongTensor, decode:bool) -> Dict[str, any]:
-        # pass through bilstm
         embedded = self.dropout(self.embeddings(input))
         packed_embedded = rnn.pack_padded_sequence(embedded, input_lens, batch_first=True, enforce_sorted=False)
         packed_output, hidden = self.lstm(packed_embedded)
