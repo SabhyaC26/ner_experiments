@@ -49,6 +49,10 @@ class BiLSTM_CRF(nn.Module):
         mask = (src != self.pad_idx).permute(0, 1)
         return mask
 
+    """
+    @todo Add support for using pre trained word embeddinngs
+    @body Add support for senna (?), glove, word2vec
+    """
     def forward(self, input:torch.LongTensor, input_lens:torch.LongTensor,
                 labels:torch.LongTensor, decode:bool) -> Dict[str, any]:
         embedded = self.dropout(self.embeddings(input))
