@@ -5,13 +5,13 @@ import torch
 import torch.nn as nn
 import torch.nn.utils.rnn as rnn
 
-from src.util.util import device
+from util.util import device
 
 
 class BiLSTM_CRF(nn.Module):
     def __init__(self, vocab_size: int, num_tags: int, embedding_dim: int,
-                 embeddings: Optional[torch.tensor], lstm_hidden_dim: int, lstm_num_layers: int,
-                 dropout: float, constraints: Optional[List[Tuple[int, int]]],
+                 embeddings: Optional[torch.tensor], lstm_hidden_dim: int,
+                 lstm_num_layers: int, dropout: float, constraints: Optional[List[Tuple[int, int]]],
                  pad_idx: int):
         super(BiLSTM_CRF, self).__init__()
         self.vocab_size = vocab_size

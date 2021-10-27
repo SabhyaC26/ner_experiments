@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 from data import Conll2003, device
 from model import BiLSTM_CRF
-from src.util.util import (build_token_mappings, build_tag_mappings, calculate_epoch_time,
+from util.util import (build_token_mappings, build_tag_mappings, calculate_epoch_time,
                            compute_entity_level_f1, count_parameters, pad_batch,
                            pad_test_batch, PAD, UNK)
 
@@ -107,17 +107,17 @@ def main(args):
 
     # mappings + datasets + dataloaders
     train, val, test = load_data()
-    # test = test.select(range(100))
+    test = test.select(range(100))
     ner_tags = train.features['ner_tags'].feature.names
     tokens_to_idx, idx_to_tokens = build_token_mappings(train['tokens'])
     tags_to_idx, idx_to_tags = build_tag_mappings(ner_tags)
     train_data = Conll2003(
-        tokens=train['tokens'], labels=train['ner_tags'],
+        tokens=train['tokens'][:100], labels=train['ner_tags'][:100],
         idx_to_tokens=idx_to_tokens, tokens_to_idx=tokens_to_idx,
         idx_to_tags=idx_to_tags, tags_to_idx=tags_to_idx
     )
     val_data = Conll2003(
-        tokens=val['tokens'], labels=val['ner_tags'],
+        tokens=val['tokens'][:100], labels=val['ner_tags'][:100],
         idx_to_tokens=idx_to_tokens, tokens_to_idx=tokens_to_idx,
         idx_to_tags=idx_to_tags, tags_to_idx=tags_to_idx
     )
@@ -133,6 +133,7 @@ def main(args):
         vocab_size=len(train_data.idx_to_tokens.keys()),
         num_tags=len(train_data.idx_to_tags.keys()),
         embedding_dim=args.embedding_dim,
+        embeddings=None,
         lstm_hidden_dim=args.hidden_dim,
         lstm_num_layers=args.num_layers,
         dropout=args.dropout,
@@ -171,7 +172,7 @@ def main(args):
         epoch_mins, epoch_secs = calculate_epoch_time(start_time, end_time)
         LOG.info(f"#######################EPOCH_{epoch + 1}#######################")
         LOG.info(f'Epoch: {epoch + 1:02} | Time: {epoch_mins}m {epoch_secs}s')
-        LOG.info(f'\tTrain Loss: {train_loss:.3f}')
+        LOG.info(f'\t Train Loss: {train_loss:.3f}')
         LOG.info(f'\t Val. Loss: {val_loss:.3f}')
         LOG.info(f'\t Test F1: {f1:.3f}')
         LOG.info(f'\t Test Precision: {p:.3f}')
