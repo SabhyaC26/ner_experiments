@@ -1,8 +1,9 @@
 import os
+from typing import Dict
+
 import numpy as np
 import torch
 
-from typing import Dict
 
 def load_glove_embeddings(glove_folder: str, embedding_dim: int, init: str,
                           tokens_to_idx: Dict[str, int]) -> torch.Tensor:

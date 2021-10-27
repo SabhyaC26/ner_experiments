@@ -1,29 +1,15 @@
 import argparse
-import logging
-import os
 import time
-from typing import Dict, List
 
 import allennlp.modules.conditional_random_field as crf
-import datasets
-import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from datasets.conll import Conll2003, device
+from datasets.conll import Conll2003
 from models.bilstm_crf import BiLSTM_CRF
-from util.util import (build_token_mappings, build_tag_mappings, calculate_epoch_time,
-                           compute_entity_level_f1, count_parameters, pad_batch,
-                           pad_test_batch, PAD, UNK)
+from util.util import *
+from util.conll_util import *
 from util.glove import load_glove_embeddings
-
-
-def load_data():
-    conll_dataset = datasets.load_dataset('conll2003')
-    train = conll_dataset['train']
-    val = conll_dataset['validation']
-    test = conll_dataset['test']
-    return train, val, test
 
 
 def train_model(model, dataloader, optimizer, clip: int) -> float:
@@ -97,14 +83,8 @@ def decode_batch(model, batch: List[torch.LongTensor], idx_to_tags: Dict[int, st
 
 def main(args):
     # init logger
-    log_output = os.path.join(args.out, 'logs', f'run_log_{args.run_id}')
-    logging.basicConfig(filename=log_output,
-                        filemode='a',
-                        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-                        datefmt='%H:%M:%S',
-                        level=logging.DEBUG)
-    LOG = logging.getLogger('BiLSTM-CRF')
-    LOG.info('BiLSTM-CRF Model on Conll-2003 NER')
+    logger = init_logger(args.out, args.run_id, 'BiLSTM-CRF')
+    logger.info('BiLSTM-CRF Model on Conll-2003 NER')
 
     # mappings + datasets + dataloaders
     train, val, test = load_data()
@@ -126,11 +106,11 @@ def main(args):
     val_dataloader = DataLoader(dataset=val_data, batch_size=args.batch_size, shuffle=True, collate_fn=pad_batch)
 
     # load glove embeddings
-    LOG.info('Loading glove embeddings.')
+    logger.info('Loading glove embeddings.')
     glove_folder = 'util/embeddings/glove/'
     glove_embeddings = load_glove_embeddings(glove_folder=glove_folder, embedding_dim=args.embedding_dim,
                                              init='zeros', tokens_to_idx=tokens_to_idx)
-    LOG.info('Glove embeddings have been loaded')
+    logger.info('Glove embeddings have been loaded')
 
     # define model
     crf_constraints = crf.allowed_transitions(
@@ -152,7 +132,7 @@ def main(args):
 
     # log number of model params
     num_params = count_parameters(bilstm_crf)
-    LOG.info(f'The model has {num_params:,} trainable parameters')
+    logger.info(f'The model has {num_params:,} trainable parameters')
 
     # run model
     optimizer = torch.optim.Adam(bilstm_crf.parameters())
@@ -178,13 +158,13 @@ def main(args):
             torch.save(bilstm_crf.state_dict(), out_path)
 
         epoch_mins, epoch_secs = calculate_epoch_time(start_time, end_time)
-        LOG.info(f"#######################EPOCH_{epoch + 1}#######################")
-        LOG.info(f'Epoch: {epoch + 1:02} | Time: {epoch_mins}m {epoch_secs}s')
-        LOG.info(f'\t Train Loss: {train_loss:.3f}')
-        LOG.info(f'\t Val. Loss: {val_loss:.3f}')
-        LOG.info(f'\t Test F1: {f1:.3f}')
-        LOG.info(f'\t Test Precision: {p:.3f}')
-        LOG.info(f'\t Test Recall: {r:.3f}')
+        logger.info(f"#######################EPOCH_{epoch + 1}#######################")
+        logger.info(f'Epoch: {epoch + 1:02} | Time: {epoch_mins}m {epoch_secs}s')
+        logger.info(f'\t Train Loss: {train_loss:.3f}')
+        logger.info(f'\t Val. Loss: {val_loss:.3f}')
+        logger.info(f'\t Test F1: {f1:.3f}')
+        logger.info(f'\t Test Precision: {p:.3f}')
+        logger.info(f'\t Test Recall: {r:.3f}')
 
 
 if __name__ == '__main__':
