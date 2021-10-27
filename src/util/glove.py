@@ -25,11 +25,3 @@ def load_glove_embeddings(glove_folder: str, embedding_dim: int, init: str,
             if token_idx <= max_idx:
                 embedding_matrix[token_idx] = np.asarray(elements[1:], dtype='float32')
     return torch.from_numpy(embedding_matrix).float()
-
-
-
-if __name__ == '__main__':
-    embedding_matrix = load_glove_embeddings(glove_folder='embeddings/glove/', embedding_dim=50, init='zeros', )
-    print(embedding_matrix[0])
-    print(embedding_matrix[1])
-    print(embedding_matrix[100])
