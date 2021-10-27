@@ -63,6 +63,7 @@ class BiLSTM_CRF(nn.Module):
                 labels: torch.LongTensor, decode: bool) -> Dict[str, any]:
         # @todo check if dropout needs to be applied on embeddings
         embedded = self.dropout(self.embedding_layer(src))
+        embedded.to(device)
         packed_embedded = rnn.pack_padded_sequence(embedded, input_lens, batch_first=True, enforce_sorted=False)
         packed_output, hidden = self.lstm(packed_embedded)
         out, _ = rnn.pad_packed_sequence(packed_output, batch_first=True)
