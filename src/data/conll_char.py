@@ -6,9 +6,10 @@ from typing import Dict, List, Tuple
 import torch
 from torch.utils.data import Dataset
 
-# @todo: need to find a better way to do imports
 from ..util.conll_util import UNK
 from ..util.util import device
+
+# @todo: need to find a better way to do imports
 
 
 class Conll2003_Char(Dataset):

@@ -1,6 +1,7 @@
 import collections
+from typing import Dict, List, Tuple, Union
+
 import datasets
-from typing import List, Tuple, Dict, Union
 
 UNK = '<UNK>'
 PAD = '<P>'
