@@ -4,8 +4,7 @@ import allennlp.modules.conditional_random_field as crf
 import torch
 import torch.nn as nn
 import torch.nn.utils.rnn as rnn
-
-from util.util import device
+from ..util.util import device
 
 
 class BiLSTM_CRF(nn.Module):
@@ -23,7 +22,7 @@ class BiLSTM_CRF(nn.Module):
         if self.embeddings is not None:
             self.embedding_layer = nn.Embedding.from_pretrained(
                 embeddings=embeddings,
-                freeze=True,
+                freeze=False,
                 padding_idx=0
             )
         else:
@@ -63,6 +62,7 @@ class BiLSTM_CRF(nn.Module):
                 labels: torch.LongTensor, decode: bool) -> Dict[str, any]:
         # @todo check if dropout needs to be applied on embeddings
         embedded = self.dropout(self.embedding_layer(src))
+        embedded.to(device)
         packed_embedded = rnn.pack_padded_sequence(embedded, input_lens, batch_first=True, enforce_sorted=False)
         packed_output, hidden = self.lstm(packed_embedded)
         out, _ = rnn.pad_packed_sequence(packed_output, batch_first=True)
