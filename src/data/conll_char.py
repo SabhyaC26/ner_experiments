@@ -9,9 +9,6 @@ from torch.utils.data import Dataset
 from ..util.conll_util import UNK
 from ..util.util import device
 
-# @todo: need to find a better way to do imports
-
-
 class Conll2003_Char(Dataset):
     def __init__(self, tokens: List[List[str]], labels: List[List[int]],
                  idx_to_tokens: Dict[int, str], tokens_to_idx: Dict[str, int],
