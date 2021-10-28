@@ -3,6 +3,7 @@ src/out/
 src/__pycache__/
 src/runner_test.ipynb
 src/util/embeddings/
+notebooks/.ipynb_checkpoints
 *.pyc
 .IDEA
 .DS_Store
