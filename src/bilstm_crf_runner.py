@@ -195,6 +195,7 @@ if __name__ == '__main__':
         "momentum": 0.9
     }
     config = wandb.config
+    print("wandb config")
     print(config)
     main(args=args, config=config, run_id=wandb.run.name)
     print('done')
