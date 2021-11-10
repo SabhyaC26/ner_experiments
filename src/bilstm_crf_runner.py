@@ -25,7 +25,8 @@ def train_model(model, dataloader, optimizer, clip: int) -> float:
             neg_log_likelihood = result['loss']
             wandb.log({'train_loss': neg_log_likelihood})
             neg_log_likelihood.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
+            if clip > 0:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
             optimizer.step()
             epoch_loss += neg_log_likelihood.item()
     return epoch_loss / len(dataloader.dataset)
@@ -133,7 +134,6 @@ def main(args, config, run_id):
         constraints=crf_constraints,
         pad_idx=train_data.tokens_to_idx[PAD]
     )
-    print(device)
     bilstm_crf.to(device)
 
     # log number of model params
@@ -188,22 +188,18 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     wandb.init(project="ner_experiments", entity="sabhyac26", reinit=True)
-    print('run initialized')
     wandb.config = {
         "embedding_dim": 300,
         "hidden_dim": 512,
         "num_layers": 1,
-        "dropout": 0.5,
+        "dropout": 0.1,
         "batch_size": 64,
-        "clip": 1,
-        "epochs": 25,
+        "clip": 0,
+        "epochs": 50,
         "optimizer": "adam",
-        "lr": 0.01,
+        "lr": 0.001,
         "momentum": 0.9
     }
     config = wandb.config
-    print("wandb config")
-    print(config)
     main(args=args, config=config, run_id=wandb.run.name)
-    print('done')
     wandb.finish()
