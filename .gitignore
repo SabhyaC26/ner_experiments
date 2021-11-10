@@ -1,8 +1,10 @@
 env/
 src/out/
+src/wandb/
 src/__pycache__/
 src/runner_test.ipynb
 src/util/embeddings/
+src/one_batch.py
 notebooks/.ipynb_checkpoints
 *.pyc
 .IDEA

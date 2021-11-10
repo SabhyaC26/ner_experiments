@@ -185,20 +185,30 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Args for BiLSTM_CRF')
     parser.add_argument('--out', help='output directory for logs', required=True, type=str)
     parser.add_argument('--glove', help='path too the folder with glove files', type=str)
+    parser.add_argument('--embedding_dim', help='embedding dimension', default=100, type=int)
+    parser.add_argument('--hidden_dim', help='hidden dimension of lstm', default=256, type=int)
+    parser.add_argument('--num_layers', help='number of lstm layers', default=1, type=int)
+    parser.add_argument('--batch_size', help='batch size for train/val/test', default=64, type=int)
+    parser.add_argument('--clip', help='gradient clipping threshold, 0 for no clipping', default=0, type=int)
+    parser.add_argument('--dropout', help='dropout threshold', default=0.5, type=float)
+    parser.add_argument('--epochs', help='number of train epochs', default=20, type=int)
+    parser.add_argument('--lr', help='learning rate for optim', default=0.001, type=float)
+    parser.add_argument('--optimizer', help='specify optimizer', default='sgd', type=str)
+    parser.add_argument('--momentum', help='momentum if using sgd', default=0.9, type=float)
     args = parser.parse_args()
 
     wandb.init(project="ner_experiments", entity="sabhyac26", reinit=True)
     wandb.config = {
-        "embedding_dim": 300,
-        "hidden_dim": 512,
-        "num_layers": 1,
-        "dropout": 0.1,
-        "batch_size": 64,
-        "clip": 0,
-        "epochs": 50,
-        "optimizer": "adam",
-        "lr": 0.001,
-        "momentum": 0.9
+        "embedding_dim": args.embedding_dim,
+        "hidden_dim": args.hidden_dim,
+        "num_layers": args.num_layers,
+        "dropout": args.dropout,
+        "batch_size": args.batch_size,
+        "clip": args.clip,
+        "epochs": args.epochs,
+        "optimizer": args.optimizer,
+        "lr": args.lr,
+        "momentum": args.momentum
     }
     config = wandb.config
     main(args=args, config=config, run_id=wandb.run.name)
