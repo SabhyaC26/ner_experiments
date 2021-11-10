@@ -107,13 +107,13 @@ def main(args, config, run_id):
         idx_to_tokens=idx_to_tokens, tokens_to_idx=tokens_to_idx,
         idx_to_tags=idx_to_tags, tags_to_idx=tags_to_idx
     )
-    train_dataloader = DataLoader(dataset=train_data, batch_size=config.batch_size, shuffle=True, collate_fn=pad_batch)
-    val_dataloader = DataLoader(dataset=val_data, batch_size=config.batch_size, shuffle=True, collate_fn=pad_batch)
+    train_dataloader = DataLoader(dataset=train_data, batch_size=config['batch_size'], shuffle=True, collate_fn=pad_batch)
+    val_dataloader = DataLoader(dataset=val_data, batch_size=config['batch_size'], shuffle=True, collate_fn=pad_batch)
 
     # load glove embeddings
     logger.info('Loading glove embeddings.')
     glove_folder = args.glove
-    glove_embeddings = load_glove_embeddings(glove_folder=glove_folder, embedding_dim=config.embedding_dim,
+    glove_embeddings = load_glove_embeddings(glove_folder=glove_folder, embedding_dim=config['embedding_dim'],
                                              init='zeros', tokens_to_idx=tokens_to_idx)
     logger.info('Glove embeddings have been loaded')
 
@@ -125,11 +125,11 @@ def main(args, config, run_id):
     bilstm_crf = BiLSTM_CRF(
         vocab_size=len(train_data.idx_to_tokens.keys()),
         num_tags=len(train_data.idx_to_tags.keys()),
-        embedding_dim=config.embedding_dim,
+        embedding_dim=config['embedding_dim'],
         embeddings=glove_embeddings,
-        lstm_hidden_dim=config.hidden_dim,
-        lstm_num_layers=config.num_layers,
-        dropout=config.dropout,
+        lstm_hidden_dim=config['hidden_dim'],
+        lstm_num_layers=config['num_layers'],
+        dropout=config['dropout'],
         constraints=crf_constraints,
         pad_idx=train_data.tokens_to_idx[PAD]
     )
@@ -140,15 +140,15 @@ def main(args, config, run_id):
     logger.info(f'The model has {num_params:,} trainable parameters')
 
     # run model
-    optimizer = torch.optim.SGD(bilstm_crf.parameters(), lr=config.lr, momentum=config.momentum)
+    optimizer = torch.optim.SGD(bilstm_crf.parameters(), lr=config['lr'], momentum=config['momentum'])
     best_val_loss = float('inf')
-    for epoch in range(config.epochs):
+    for epoch in range(config['epochs']):
         start_time = time.time()
-        train_loss = train_model(model=bilstm_crf, dataloader=train_dataloader, optimizer=optimizer, clip=config.clip)
+        train_loss = train_model(model=bilstm_crf, dataloader=train_dataloader, optimizer=optimizer, clip=config['clip'])
         val_loss = evaluate_model(model=bilstm_crf, dataloader=val_dataloader)
         end_time = time.time()
 
-        predicted_labels = test_model(test_data=test, model=bilstm_crf, batch_size=config.batch_size,
+        predicted_labels = test_model(test_data=test, model=bilstm_crf, batch_size=config['batch_size'],
                                       tokens_to_idx=tokens_to_idx, idx_to_tags=idx_to_tags)
 
         gold_labels = []
