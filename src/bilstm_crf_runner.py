@@ -181,7 +181,8 @@ if __name__ == '__main__':
     parser.add_argument('--glove', help='path too the folder with glove files', type=str)
     args = parser.parse_args()
 
-    run = wandb.init(project="ner_experiments", entity="Sabhyac26", reinit=True)
+    run = wandb.init(project="ner_experiments", entity="sabhyac26", reinit=True)
+    print('run initialized')
     wandb.config = {
         "embedding_dim": 300,
         "hidden_dim": 512,
@@ -194,4 +195,5 @@ if __name__ == '__main__':
         "momentum": 0.9
     }
     main(args=args, config=wandb.config, run_id=run.id)
+    print('done')
     run.finish()
