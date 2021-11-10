@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.utils.rnn as rnn
 
-from src.util.util import device
+from util.util import device
 
 
 class BiLSTM_CRF(nn.Module):
