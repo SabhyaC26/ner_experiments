@@ -23,6 +23,7 @@ def train_model(model, dataloader, optimizer, clip: int) -> float:
             optimizer.zero_grad()
             result = model(x_padded, x_lens, y_padded, decode=False)
             neg_log_likelihood = result['loss']
+            wandb.log({'train_loss': neg_log_likelihood})
             neg_log_likelihood.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
             optimizer.step()
@@ -38,6 +39,7 @@ def evaluate_model(model, dataloader) -> float:
             for x_padded, x_lens, y_padded in tqdm_loader:
                 result = model(x_padded, x_lens, y_padded, decode=False)
                 neg_log_likelihood = result['loss']
+                wandb.log({'val_loss': neg_log_likelihood})
                 epoch_loss += neg_log_likelihood.item()
     return epoch_loss / len(dataloader.dataset)
 
@@ -154,6 +156,9 @@ def main(args, config, run_id):
             gold_labels.append([train_data.idx_to_tags[i] for i in label_lst])
 
         p, r, f1 = compute_entity_level_f1(predicted_labels=predicted_labels, gold_labels=gold_labels)
+        wandb.log({'test_precision': p,
+                   'test_recall': r,
+                   'test_f1': f1})
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
@@ -174,8 +179,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Args for BiLSTM_CRF')
     parser.add_argument('--out', help='output directory for logs', required=True, type=str)
     parser.add_argument('--glove', help='path too the folder with glove files', type=str)
-
     args = parser.parse_args()
+
     run = wandb.init(project="ner_experiments", entity="Sabhyac26", reinit=True)
     wandb.config = {
         "embedding_dim": 300,
