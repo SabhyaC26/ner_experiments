@@ -1,0 +1,8 @@
+2021-11-09 21:28:29,644 INFO    MainThread:1437237 [internal.py:wandb_internal():87] W&B internal server running at pid: 1437237, started at: 2021-11-09 21:28:29.615740
+2021-11-09 21:28:29,645 INFO    WriterThread:1437237 [datastore.py:open_for_write():77] open: /home/ssc255/nlp/ner_experiments/src/wandb/run-20211109_212743-2wvtd0ey/run-2wvtd0ey.wandb
+2021-11-09 21:28:29,646 DEBUG   HandlerThread:1437237 [handler.py:handle_request():130] handle_request: check_version
+2021-11-09 21:28:29,646 DEBUG   HandlerThread:1437237 [handler.py:handle_request():130] handle_request: shutdown
+2021-11-09 21:28:29,646 INFO    HandlerThread:1437237 [handler.py:finish():731] shutting down handler
+2021-11-09 21:28:29,660 INFO    WriterThread:1437237 [datastore.py:close():281] close: /home/ssc255/nlp/ner_experiments/src/wandb/run-20211109_212743-2wvtd0ey/run-2wvtd0ey.wandb
+2021-11-09 21:28:29,674 INFO    SenderThread:1437237 [sender.py:finish():1091] shutting down sender
+2021-11-09 21:28:30,646 INFO    MainThread:1437237 [internal.py:handle_exit():77] Internal process exited

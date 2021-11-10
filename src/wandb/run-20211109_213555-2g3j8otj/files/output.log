@@ -1,0 +1,11 @@
+
+  0%|                                                                                                                    | 0/3 [00:00<?, ?it/s]
+run initialized
+wandb config
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3/3 [00:00<00:00, 15.47it/s]
+Traceback (most recent call last):
+  File "/home/ssc255/nlp/ner_experiments/src/bilstm_crf_runner.py", line 200, in <module>
+    main(args=args, config=config, run_id=wandb.run.name)
+  File "/home/ssc255/nlp/ner_experiments/src/bilstm_crf_runner.py", line 110, in main
+    train_dataloader = DataLoader(dataset=train_data, batch_size=config.batch_size, shuffle=True, collate_fn=pad_batch)
+AttributeError: 'dict' object has no attribute 'batch_size'

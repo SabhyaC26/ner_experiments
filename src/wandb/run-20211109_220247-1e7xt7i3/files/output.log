@@ -1,0 +1,135 @@
+run initialized
+wandb config
+{'embedding_dim': 300, 'hidden_dim': 512, 'num_layers': 1, 'dropout': 0.5, 'batch_size': 64, 'clip': 1, 'epochs': 25, 'optimizer': 'adam', 'lr': 0.01, 'momentum': 0.9}
+100%|██████████████████████████████████████████████████████████████████████████████████████████████| 3/3 [00:00<00:00, 407.85it/s]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 54%|███████████████████████████████████████████████▌                                        | 119/220 [05:43<04:51,  2.88s/batch]
+Traceback (most recent call last):
+  File "/home/ssc255/nlp/ner_experiments/src/bilstm_crf_runner.py", line 205, in <module>
+    main(args=args, config=config, run_id=wandb.run.name)
+  File "/home/ssc255/nlp/ner_experiments/src/bilstm_crf_runner.py", line 151, in main
+    train_loss = train_model(model=bilstm_crf, dataloader=train_dataloader, optimizer=optimizer, clip=config['clip'])
+  File "/home/ssc255/nlp/ner_experiments/src/bilstm_crf_runner.py", line 27, in train_model
+    neg_log_likelihood.backward()
+  File "/home/ssc255/.conda/envs/pax/lib/python3.9/site-packages/torch/_tensor.py", line 255, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph, inputs=inputs)
+  File "/home/ssc255/.conda/envs/pax/lib/python3.9/site-packages/torch/autograd/__init__.py", line 147, in backward
+    Variable._execution_engine.run_backward(
+KeyboardInterrupt

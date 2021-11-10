@@ -1,0 +1,17 @@
+run initialized
+wandb config
+{'embedding_dim': 300, 'hidden_dim': 512, 'num_layers': 1, 'dropout': 0.5, 'batch_size': 64, 'clip': 1, 'epochs': 25, 'optimizer': 'adam', 'lr': 0.01, 'momentum': 0.9}
+Traceback (most recent call last):
+  File "/home/ssc255/nlp/ner_experiments/src/bilstm_crf_runner.py", line 206, in <module>
+    main(args=args, config=config, run_id=wandb.run.name)
+  File "/home/ssc255/nlp/ner_experiments/src/bilstm_crf_runner.py", line 91, in main
+    logger = init_logger(args.out, run_id, 'BiLSTM-CRF')
+  File "/home/ssc255/nlp/ner_experiments/src/util/util.py", line 13, in init_logger
+    logging.basicConfig(filename=log_output,
+  File "/home/ssc255/.conda/envs/pax/lib/python3.9/logging/__init__.py", line 2003, in basicConfig
+    h = FileHandler(filename, mode,
+  File "/home/ssc255/.conda/envs/pax/lib/python3.9/logging/__init__.py", line 1146, in __init__
+    StreamHandler.__init__(self, self._open())
+  File "/home/ssc255/.conda/envs/pax/lib/python3.9/logging/__init__.py", line 1175, in _open
+    return open(self.baseFilename, self.mode, encoding=self.encoding,
+FileNotFoundError: [Errno 2] No such file or directory: '/home/ssc255/nlp/ner_experiments/src/out,/logs/run_log_earthy-fog-7'
