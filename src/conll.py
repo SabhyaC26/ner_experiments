@@ -3,8 +3,8 @@ from typing import Dict, List, Tuple
 import torch
 from torch.utils.data import Dataset
 
-from ..util.conll_util import UNK
-from ..util.util import device
+from util.conll_util import UNK
+from util.util import device
 
 
 class Conll2003(Dataset):

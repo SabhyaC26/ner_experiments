@@ -8,11 +8,11 @@ import allennlp.modules.conditional_random_field as crf
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from ..data.conll import Conll2003
-from ..models.bilstm_crf import BiLSTM_CRF
-from ..util.conll_util import *
-from ..util.glove import load_glove_embeddings
-from ..util.util import *
+from conll import Conll2003
+from bilstm_crf import BiLSTM_CRF
+from util.conll_util import *
+from util.glove import load_glove_embeddings
+from util.util import *
 
 
 def train_model(model, dataloader, optimizer, clip: int) -> float:
@@ -176,7 +176,7 @@ if __name__ == '__main__':
     parser.add_argument('--glove', help='path too the folder with glove files', type=str)
 
     args = parser.parse_args()
-    run = wandb.init(reinit=True)
+    run = wandb.init(project="ner_experiments", entity="Sabhyac26", reinit=True)
     wandb.config = {
         "embedding_dim": 300,
         "hidden_dim": 512,

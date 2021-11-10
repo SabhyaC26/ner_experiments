@@ -1,11 +1,8 @@
 import argparse
 
-import torch
-from torch.utils.data import DataLoader
-
-from ..data.conll_char import Conll2003_Char
-from ..util.conll_util import *
-from ..util.util import *
+from src.conll_char import Conll2003_Char
+from src.util.conll_util import *
+from src.util.util import *
 
 
 def main(args):
